@@ -1,0 +1,64 @@
+{
+  "1.0": {
+    "sha256": "d046f5c4cc04fdc901c841fbf6c7ded5b0408a159ca5124ef71d338478db6628",
+    "map_loads": 97,
+    "scroll_trials": 58,
+    "movement_observed": 56,
+    "cache_overflows": 0,
+    "resident_pixel_mismatches": 0,
+    "unown_words_pixel_exact": 4,
+    "boundary_maps": [
+      [
+        24,
+        3
+      ],
+      [
+        24,
+        4
+      ]
+    ],
+    "title_poses": 4,
+    "battle_and_save_reload": true,
+    "clock_seconds": 602,
+    "clock_emulated_seconds": 602.7374267578125,
+    "audio_changes": false,
+    "limitations": [
+      "No physical DMG/EZ-Flash validation of this build.",
+      "Fixture map loads and movement trials are not a full game playthrough.",
+      "Train attribute-plane fix is source-reviewed; a complete train ride is not covered by these runtime tests.",
+      "Trade/link and every battle effect/event-dependent sprite combination are not certified."
+    ],
+    "support_status": "approved beta input; hardware validation outstanding"
+  },
+  "1.1": {
+    "sha256": "e2ffb2a8062d24da04424ed5a42dca23547ad6f66e30f3b649dac2913e7695b6",
+    "map_loads": 97,
+    "scroll_trials": 58,
+    "movement_observed": 56,
+    "cache_overflows": 0,
+    "resident_pixel_mismatches": 0,
+    "unown_words_pixel_exact": 4,
+    "boundary_maps": [
+      [
+        24,
+        3
+      ],
+      [
+        24,
+        4
+      ]
+    ],
+    "title_poses": 4,
+    "battle_and_save_reload": true,
+    "clock_seconds": 602,
+    "clock_emulated_seconds": 602.7374267578125,
+    "audio_changes": false,
+    "limitations": [
+      "No physical DMG/EZ-Flash validation of this build.",
+      "Fixture map loads and movement trials are not a full game playthrough.",
+      "Train attribute-plane fix is source-reviewed; a complete train ride is not covered by these runtime tests.",
+      "Trade/link and every battle effect/event-dependent sprite combination are not certified."
+    ],
+    "support_status": "approved beta input; hardware validation outstanding"
+  }
+}

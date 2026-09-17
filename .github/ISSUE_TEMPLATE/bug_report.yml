@@ -1,0 +1,37 @@
+name: Bug report
+description: Something went wrong in the converter or converted game.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "Please don't attach a ROM. The app's version report is enough to identify it."
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include where you were in the game and what you expected to see.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: version
+    attributes:
+      label: ROM version report
+      description: Click Copy version report in the converter and paste it here.
+      render: json
+  - type: input
+    id: hardware
+    attributes:
+      label: Hardware or emulator
+      placeholder: "DMG + EZ-Flash Jr, or emulator name and hardware mode"
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or other details
