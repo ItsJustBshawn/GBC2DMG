@@ -1,6 +1,6 @@
 # GBC2DMG
 
-A Python tool that converts supported Game Boy Color ROMs to run on the original Game Boy. Choose your ROM, check whether it's supported, and save a DMG copy.
+A Python tool that converts supported Game Boy Color ROMs to run on the original Game Boy.
 
 [Download](https://github.com/ItsJustBshawn/GBC2DMG/releases/tag/v0.4-beta.2)
 
@@ -17,11 +17,9 @@ Requires **Python 3.11 or newer with Tk**. No pip packages are needed.
 
 1. Download and extract the Python ZIP.
 2. On Windows, double-click `launch.cmd`. On macOS or Linux, run `python3 app.py`.
-3. Click **Choose ROM**, then **Convert**.
+3. Select your ROM and save the converted file.
 
 Get Python from [python.org](https://www.python.org/downloads/). Keep the extracted folder together. Your original ROM is not changed. ROMs are not included.
-
-**Save report** exports the detected version and file hash for bug reports.
 
 ## About the port
 
