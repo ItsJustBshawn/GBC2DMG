@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1-beta
+
+- Fixed garbled graphics in the Suicune close-up during the opening movie.
+- Release numbering now starts at 0.1 beta.
+
 ## 0.4-beta.2
 
 - Python download with no third-party packages required.

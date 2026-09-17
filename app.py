@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from converter import catalog, convert, identify
 
-APP_VERSION = '0.4-beta.2'
+APP_VERSION = '0.1-beta'
 
 
 class ConverterApp:

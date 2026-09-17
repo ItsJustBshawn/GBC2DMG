@@ -59,7 +59,7 @@ def main():
     parser.add_argument('target', type=Path)
     parser.add_argument('--testing', action='store_true', help='Enable this exact recipe for local beta testing; does not approve public support.')
     parser.add_argument('--approved', action='store_true', help='Record maintainer approval for this exact beta recipe.')
-    parser.add_argument('--release', default='0.4-beta.1')
+    parser.add_argument('--release', default='0.1-beta')
     args = parser.parse_args()
     source, target = args.source.read_bytes(), args.target.read_bytes()
     if digest(source) not in KNOWN_SOURCES:

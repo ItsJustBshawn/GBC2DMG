@@ -12,11 +12,11 @@
       "approved": true,
       "support_level": "beta",
       "testing_enabled": false,
-      "release": "0.4-beta.1",
+      "release": "0.1-beta",
       "source_sha256": "d6702e353dcbe2d2c69183046c878ef13a0dae4006e8cdff521cca83dd1582fe",
-      "output_sha256": "d046f5c4cc04fdc901c841fbf6c7ded5b0408a159ca5124ef71d338478db6628",
+      "output_sha256": "c06e0f3a18f88011c52ef897cd9249a43f253f43cdb6965fe1a0338754596278",
       "recipe": "recipes/crystal-en-v10.d2m",
-      "recipe_sha256": "6e4014a2d89e66d5ae7372ce2a72d97ce40f83268124111b30e102d989fa1496",
+      "recipe_sha256": "5b0d7c485c20c83e6324dababa416c241c2412023958f4fcf7d7e74cd815f1ae",
       "note": "Beta. Clock advances during play only."
     },
     {
@@ -30,11 +30,11 @@
       "approved": true,
       "support_level": "beta",
       "testing_enabled": false,
-      "release": "0.4-beta.1",
+      "release": "0.1-beta",
       "source_sha256": "fdcc3c8c43813cf8731fc037d2a6d191bac75439c34b24ba1c27526e6acdc8a2",
-      "output_sha256": "e2ffb2a8062d24da04424ed5a42dca23547ad6f66e30f3b649dac2913e7695b6",
+      "output_sha256": "a1fa4f82e2992a8a3b8bec07306d9adbd6fc90e99a6aee2e52d7fba51f26b7ec",
       "recipe": "recipes/crystal-en-v11.d2m",
-      "recipe_sha256": "d9be86a3de578d8bc602b8b1251c8eacc01acf7f6389f90d0450fc4eb78d3c4c",
+      "recipe_sha256": "6fed437d53c146c465461ab30c9dae8e6dc435134d21296f6b82bdaa85b6b684",
       "note": "Beta. Clock advances during play only."
     }
   ]

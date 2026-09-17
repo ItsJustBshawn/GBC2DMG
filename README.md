@@ -2,7 +2,7 @@
 
 A Python tool that converts supported Game Boy Color ROMs to run on the original Game Boy.
 
-[Download](https://github.com/ItsJustBshawn/GBC2DMG/releases/tag/v0.4-beta.2)
+[Download](https://github.com/ItsJustBshawn/GBC2DMG/releases/tag/v0.1-beta)
 
 ## Compatibility
 
