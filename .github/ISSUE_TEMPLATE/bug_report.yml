@@ -22,7 +22,7 @@ body:
     id: version
     attributes:
       label: ROM version report
-      description: Click Copy version report in the converter and paste it here.
+      description: Click Save report in the app, then paste the report here.
       render: json
   - type: input
     id: hardware

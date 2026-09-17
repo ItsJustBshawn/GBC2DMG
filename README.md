@@ -1,41 +1,44 @@
 # GBC2DMG
 
-GBC2DMG converts supported Game Boy Color ROMs to run on the original Game Boy (DMG).
+A Python tool that converts supported Game Boy Color ROMs to run on the original Game Boy. Choose your ROM, check whether it's supported, and save a DMG copy.
 
-[Releases](https://github.com/ItsJustBshawn/GBC2DMG/releases/tag/v0.4-beta.1) · [Run from source](docs/BUILDING.md)
+[Download](https://github.com/ItsJustBshawn/GBC2DMG/releases/tag/v0.4-beta.2)
 
-## Supported games
+## Compatibility
 
-| Game | Region / language | Versions |
-| --- | --- | --- |
-| Pokémon Crystal | USA / Europe, English | 1.0 and 1.1 (Rev 1 / Rev A) |
+- **Pokémon Crystal, English (USA/Europe), v1.0**
+- **Pokémon Crystal, English (USA/Europe), v1.1 — Rev 1 / Rev A**
 
-Crystal is the only supported game right now. Rev 1 and Rev A are names for the same version. The app checks your ROM and tells you which version you have. Other games, regions and modified ROMs aren't supported.
+Rev 1 and Rev A are the same revision. Other games, regions and modified ROMs are not supported. The app checks the file's contents, not its name.
 
-## How to use it
+## Run it
 
-The Windows download is currently unavailable. You can find the source and setup instructions in [BUILDING.md](docs/BUILDING.md).
+Requires **Python 3.11 or newer with Tk**. No pip packages are needed.
 
-1. Open the app and choose your ROM.
-2. Click **Convert to DMG** and save the new `.gb` file.
-3. Load it on your flash cartridge or in a DMG-mode emulator.
+1. Download and extract the Python ZIP.
+2. On Windows, double-click `launch.cmd`. On macOS or Linux, run `python3 app.py`.
+3. Click **Choose ROM**, then **Convert**.
 
-Your original ROM is left unchanged. ROMs are not included.
+Get Python from [python.org](https://www.python.org/downloads/). Keep the extracted folder together. Your original ROM is not changed. ROMs are not included.
 
-## Things to know
+**Save report** exports the detected version and file hash for bug reports.
 
-This is a beta. Back up your saves before trying it.
+## About the port
 
-Crystal's clock runs while you're playing and pauses when the Game Boy is off. The converted game needs MBC5 support with 128 KB save RAM.
+Crystal uses memory banks and graphics hardware that the DMG doesn't have. The port moves some working data into cartridge RAM, remaps graphics into one VRAM bank, and replaces Color-only transfers. The Python app applies that port to a matching ROM and verifies the result.
 
-## Found a bug?
+Supporting another game requires adapting its engine first. The converter and version checks are reusable; each new game still needs its own tested port before it can be added to the compatibility list.
 
-[Open an issue](https://github.com/ItsJustBshawn/GBC2DMG/issues) with what happened and which cartridge or emulator you're using. You can copy your ROM's version report from the app. Please don't upload ROMs.
+[How it works](docs/HOW-IT-WORKS.md) · [Development](docs/BUILDING.md)
 
-## Source and credits
+## Notes
 
-[Run or build from source](docs/BUILDING.md) · [License](LICENSE)
+This is a beta. Back up your saves. Crystal's clock advances during play and pauses when powered off. The converted game requires MBC5 with 128 KB save RAM.
 
-Built using [pret/pokecrystal](https://github.com/pret/pokecrystal) and [RGBDS](https://github.com/gbdev/rgbds), with emulator testing in [SameBoy](https://github.com/LIJI32/SameBoy).
+[Report a bug](https://github.com/ItsJustBshawn/GBC2DMG/issues) with the version report and your hardware or emulator. Please don't upload ROMs.
 
-GBC2DMG is an unofficial project and is not affiliated with Nintendo, Game Freak or The Pokémon Company.
+## Credits
+
+[pret/pokecrystal](https://github.com/pret/pokecrystal) · [RGBDS](https://github.com/gbdev/rgbds) · [Pan Docs](https://gbdev.io/pandocs/) · [SameBoy](https://github.com/LIJI32/SameBoy)
+
+Application code is [MIT licensed](LICENSE). GBC2DMG is unofficial and is not affiliated with Nintendo, Game Freak or The Pokémon Company.

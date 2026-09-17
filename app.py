@@ -1,122 +1,137 @@
-"""Desktop ROM identification and conversion. No network access."""
+"""Plain Tk interface for local ROM conversion."""
 from pathlib import Path
 import json
+import queue
 import sys
+import threading
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 from converter import catalog, convert, identify
+
+APP_VERSION = '0.4-beta.2'
+
+
+class ConverterApp:
+    def __init__(self, root):
+        self.root = root
+        self.games = catalog()
+        self.source = self.entry = self.report = None
+        self.busy = False
+        self.results = queue.Queue()
+        root.title('GBC2DMG')
+        root.geometry('600x235')
+        root.minsize(480, 235)
+        panel = ttk.Frame(root, padding=18)
+        panel.pack(fill='both', expand=True)
+        ttk.Label(panel, text='ROM file').pack(anchor='w')
+        self.filename = tk.StringVar(value='No file selected')
+        ttk.Entry(panel, textvariable=self.filename, state='readonly').pack(fill='x', pady=(5, 12))
+        buttons = ttk.Frame(panel)
+        buttons.pack(fill='x')
+        self.choose_button = ttk.Button(buttons, text='Choose ROM…', command=self.choose)
+        self.choose_button.pack(side='left')
+        self.convert_button = ttk.Button(buttons, text='Convert…', command=self.run_conversion, state='disabled')
+        self.convert_button.pack(side='left', padx=8)
+        self.save_button = ttk.Button(buttons, text='Save report…', command=self.save_report, state='disabled')
+        self.save_button.pack(side='left')
+        self.status = tk.StringVar(value='Choose a ROM to check whether it is supported.')
+        self.status_label = ttk.Label(panel, textvariable=self.status, wraplength=560)
+        self.status_label.pack(anchor='w', fill='x', pady=(15, 8))
+        ttk.Label(panel, text='Crystal clock: runs during play; pauses when powered off.').pack(side='bottom', anchor='w')
+        panel.bind('<Configure>', lambda e: self.status_label.configure(wraplength=max(200, e.width-36)))
+        root.bind('<Control-o>', lambda e: self.choose())
+        root.protocol('WM_DELETE_WINDOW', self.close)
+        root.after(60, self._poll)
+
+    def close(self):
+        if self.busy:
+            self.status.set('Please wait for the file operation to finish before closing.')
+        else:
+            self.root.destroy()
+
+    def _set_busy(self, busy):
+        self.busy = busy
+        self.choose_button.configure(state='disabled' if busy else 'normal')
+        self.convert_button.configure(state='normal' if self.entry and not busy else 'disabled')
+        self.save_button.configure(state='normal' if self.report and not busy else 'disabled')
+
+    def _job(self, kind, function):
+        self._set_busy(True)
+        def work():
+            try:
+                result = function()
+            except Exception as exc:
+                self.results.put((kind, None, exc))
+            else:
+                self.results.put((kind, result, None))
+        threading.Thread(target=work, daemon=True).start()
+
+    def _poll(self):
+        try:
+            kind, result, error = self.results.get_nowait()
+        except queue.Empty:
+            pass
+        else:
+            self._set_busy(False)
+            if error:
+                self.status.set('That filename already exists. Choose a new name.' if isinstance(error, FileExistsError) else str(error))
+            elif kind == 'identify':
+                self._show_report(*result)
+            else:
+                destination, sha = result
+                self.status.set('Converted and verified: '+destination.name)
+        self.root.after(60, self._poll)
+
+    def choose(self, path=None):
+        if self.busy:
+            return
+        path = path or filedialog.askopenfilename(parent=self.root, title='Choose a ROM', filetypes=[('Game Boy ROMs', '*.gbc *.gb'), ('All files', '*.*')])
+        if not path:
+            return
+        self.source = self.entry = self.report = None
+        self.filename.set(Path(path).name)
+        self.status.set('Checking ROM…')
+        self._job('identify', lambda: (Path(path), identify(path)))
+
+    def _show_report(self, path, report):
+        self.source, self.report = path, report
+        self.entry = next((g for g in self.games if g['source_sha256'] == report['sha256']), None) if report['can_convert'] else None
+        if self.entry:
+            self.status.set('Supported: '+report['game'])
+        elif report['kind'] == 'converted':
+            self.status.set('Already converted: '+report['game'])
+        else:
+            self.status.set('Not supported. This ROM does not match a supported version.')
+        self._set_busy(False)
+
+    def save_report(self):
+        if self.busy or not self.report:
+            return
+        path = filedialog.asksaveasfilename(parent=self.root, initialfile='rom-version.json', defaultextension='.json', filetypes=[('Version report', '*.json')])
+        if path:
+            try:
+                Path(path).write_text(json.dumps(self.report, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
+            except OSError as exc:
+                messagebox.showerror('Could not save report', str(exc), parent=self.root)
+
+    def run_conversion(self, destination=None):
+        if self.busy or not self.entry:
+            return
+        path = destination or filedialog.asksaveasfilename(parent=self.root, title='Save DMG copy', initialfile=self.source.stem+' - DMG.gb', defaultextension='.gb', filetypes=[('Game Boy ROM', '*.gb')])
+        if not path:
+            return
+        source, entry, destination = self.source, self.entry, Path(path)
+        self.status.set('Converting…')
+        self._job('convert', lambda: (destination, convert(source, destination, entry)))
 
 
 def main():
+    if sys.version_info < (3, 11):
+        raise SystemExit('GBC2DMG needs Python 3.11 or newer.')
     root = tk.Tk()
-    root.title('GBC2DMG')
-    root.geometry('820x720')
-    root.minsize(760, 680)
-    root.configure(bg='#eef1e9')
-    style = ttk.Style()
-    style.theme_use('clam')
-    style.configure('TFrame', background='#eef1e9')
-    style.configure('TLabel', background='#eef1e9', foreground='#203125', font=('Segoe UI', 11))
-    style.configure('TButton', font=('Segoe UI', 11), padding=(14, 9))
-    style.configure('Accent.TButton', background='#355f42', foreground='white')
-    style.map('Accent.TButton', background=[('active', '#264c32'), ('disabled', '#d8ded5')], foreground=[('disabled', '#788177')])
-    panel = ttk.Frame(root, padding=28)
-    panel.pack(fill='both', expand=True)
-    ttk.Label(panel, text='GBC2DMG', font=('Segoe UI', 25, 'bold')).pack(anchor='w')
-    ttk.Label(panel, text='Beta 1  ·  English Crystal 1.0 and 1.1').pack(anchor='w', pady=(3, 18))
-    ttk.Label(panel, text='Check your ROM version, then make a DMG copy.').pack(anchor='w')
-    ttk.Label(panel, text='Rev A and Rev 1 are two names for version 1.1.').pack(anchor='w', pady=(3, 14))
-    games = catalog()
-    selected = {'path': None, 'entry': None, 'report': None}
-    version = tk.StringVar(value='No ROM selected')
-    status = tk.StringVar(value='Choose an original .gbc file to get started.')
-
-    def choose(path=None):
-        path = path or filedialog.askopenfilename(filetypes=[('Game Boy ROM', '*.gb *.gbc'), ('All files', '*.*')])
-        if not path:
-            return
-        selected.update(path=None, entry=None, report=None)
-        for button in [convert_button, copy_button, save_button]:
-            button.configure(state='disabled')
-        try:
-            info = identify(path)
-            entry = next((g for g in games if g['source_sha256'] == info['sha256']), None)
-            selected.update(path=path, entry=entry, report=info)
-            version.set(info.get('game', 'Unrecognized ROM'))
-            if info['kind'] == 'converted':
-                status.set('This is already a converted DMG ROM. Use it to play; no conversion is needed.')
-            elif info['can_convert']:
-                status.set('Exact version matched. Ready to convert to a new file.')
-            elif info['recognized']:
-                status.set('Version recognized. Conversion is not enabled for this release.')
-            else:
-                status.set('No exact match. The header alone cannot confirm the version; this may be a different region or a modified dump.')
-            aliases = ', '.join(info.get('aliases', [])) or 'No catalog match'
-            lines = [f"File       {info['file']}", f"Version    {info.get('version', 'Unknown')}  ({aliases})",
-                     f"Size       {info['size_bytes']:,} bytes", f"Header     Revision {info['header_revision']}; checksum {'OK' if info['header_checksum_valid'] else 'does not match'}",
-                     f"ROM check  {'OK' if info['global_checksum_valid'] else 'Checksum does not match'}", 'SHA-256', info['sha256']]
-            details.configure(state='normal')
-            details.delete('1.0', 'end')
-            details.insert('1.0', '\n'.join(lines))
-            details.configure(state='disabled')
-            convert_button.configure(state='normal' if info['can_convert'] else 'disabled')
-            copy_button.configure(state='normal')
-            save_button.configure(state='normal')
-        except (OSError, ValueError) as exc:
-            version.set('Cannot read this file')
-            status.set(str(exc))
-            details.configure(state='normal')
-            details.delete('1.0', 'end')
-            details.configure(state='disabled')
-
-    def report_text():
-        return json.dumps(selected['report'], indent=2, ensure_ascii=False) + '\n'
-
-    def copy_report():
-        root.clipboard_clear()
-        root.clipboard_append(report_text())
-        status.set('Version report copied. It includes the hash, not the ROM data.')
-
-    def save_report():
-        path = filedialog.asksaveasfilename(defaultextension='.json', initialfile='rom-version.json', filetypes=[('Version report', '*.json')])
-        if path:
-            try:
-                Path(path).write_text(report_text(), encoding='utf-8')
-                status.set('Version report saved.')
-            except OSError as exc:
-                messagebox.showerror('Could not save report', str(exc))
-
-    def run():
-        path = filedialog.asksaveasfilename(defaultextension='.gb', initialfile=Path(selected['path']).stem + ' - DMG.gb', filetypes=[('Game Boy ROM', '*.gb')])
-        if not path:
-            return
-        try:
-            convert(selected['path'], path, selected['entry'])
-            status.set('Converted and verified. Saved: ' + path)
-            messagebox.showinfo('Conversion complete', 'Your DMG ROM is ready.\n\n' + path + '\n\nYour original ROM was not changed.')
-        except FileExistsError:
-            messagebox.showerror('Choose a new filename', 'That file already exists. Choose another name so it stays untouched.')
-        except (OSError, ValueError, KeyError) as exc:
-            messagebox.showerror('Conversion stopped', str(exc))
-
-    ttk.Button(panel, text='Choose ROM…', command=choose).pack(anchor='w')
-    ttk.Label(panel, textvariable=version, font=('Segoe UI', 15, 'bold')).pack(anchor='w', pady=(18, 8))
-    details = tk.Text(panel, height=8, wrap='char', font=('Consolas', 10), bg='#ffffff', fg='#203125', relief='flat', padx=12, pady=12, state='disabled')
-    details.pack(fill='x')
-    reports = ttk.Frame(panel)
-    reports.pack(fill='x', pady=(8, 10))
-    copy_button = ttk.Button(reports, text='Copy version report', command=copy_report, state='disabled')
-    copy_button.pack(side='left')
-    save_button = ttk.Button(reports, text='Save report…', command=save_report, state='disabled')
-    save_button.pack(side='left', padx=8)
-    ttk.Label(panel, textvariable=status, wraplength=730).pack(anchor='w', fill='x', pady=(0, 12))
-    convert_button = ttk.Button(panel, text='Convert to DMG…', style='Accent.TButton', command=run, state='disabled')
-    convert_button.pack(anchor='w')
-    ttk.Separator(panel).pack(fill='x', pady=(18, 10))
-    ttk.Label(panel, text='Clock: advances during play; pauses when powered off.', font=('Segoe UI', 10)).pack(anchor='w')
-    ttk.Label(panel, text='Runs locally. Your original file is not changed.', font=('Segoe UI', 10)).pack(anchor='w', pady=3)
+    app = ConverterApp(root)
     if len(sys.argv) == 2:
-        root.after(50, lambda: choose(sys.argv[1]))
+        root.after(100, lambda: app.choose(sys.argv[1]))
     root.mainloop()
 
 
